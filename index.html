@@ -3,36 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Westlake Elite // v19.0</title>
+    <title>Westlake Elite // v 2.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg: #030303; --glass: rgba(255, 255, 255, 0.04); --glass-border: rgba(255, 255, 255, 0.08);
-            --primary: #d2e7d6; --accent: #88998b; --error: #ffb4ab; --radius: 3vh;
+            --bg: #090e17; 
+            --glass: rgba(18, 30, 49, 0.55); 
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #e6edf8;
+            --primary: #5c8dd6; 
+            --accent: #8ea1c0; 
+            --error: #ffb4ab; 
+            --radius: 3vh;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: #e2e3dd; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        body { background: var(--bg); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
         /* HEADER */
-        header { display: flex; justify-content: space-between; align-items: flex-end; padding: 4vh 5vh; height: 15vh; }
-        .h-time { font-size: 9vh; font-weight: 200; line-height: 0.8; letter-spacing: -2px; }
-        .h-brand { text-align: right; }
-        .h-brand h1 { font-size: 2.5vh; font-weight: 400; letter-spacing: 4px; color: var(--primary); text-transform: uppercase; }
-        .h-brand p { font-size: 1.2vh; opacity: 0.4; letter-spacing: 2px; margin-top: 0.5vh; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 2vh 5vh; height: 18vh; }
+        .h-time { font-size: 9vh; font-weight: 200; line-height: 0.8; letter-spacing: -2px; color: #ffffff; }
+        .h-brand { text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+        
+        /* LOGO STYLING - Significantly enlarged & enhanced visibility */
+        .h-brand img { 
+            height: 10vh; 
+            width: auto; 
+            max-width: 35vw;
+            object-fit: contain; 
+            filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(92, 141, 214, 0.6)); 
+        }
+        .h-brand p { font-size: 1.1vh; opacity: 0.5; letter-spacing: 2px; margin-top: 0.5vh; color: var(--accent); }
 
         /* LAYOUT */
         .container { display: flex; flex: 1; padding: 0 4vh 4vh 4vh; gap: 3vh; min-height: 0; }
         aside { flex: 0 0 32vw; display: flex; flex-direction: column; gap: 3vh; }
-        main { flex: 1; display: flex; border-radius: var(--radius); overflow: hidden; background: #000; border: 1px solid var(--glass-border); }
+        main { flex: 1; display: flex; border-radius: var(--radius); overflow: hidden; background: #000; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
 
         /* GLASS CARDS */
-        .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 3vh; display: flex; flex-direction: column; min-height: 0; backdrop-filter: blur(10px); }
+        .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 3vh; display: flex; flex-direction: column; min-height: 0; backdrop-filter: blur(16px); }
         .label { font-size: 1.1vh; font-weight: 600; color: var(--accent); margin-bottom: 2vh; letter-spacing: 0.2vh; text-transform: uppercase; }
 
         /* BUTTONS */
         .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vh; margin-bottom: 2vh; }
-        .btn { background: var(--glass); border: 1px solid var(--glass-border); color: #fff; padding: 1.8vh; border-radius: 1.5vh; font-size: 1.5vh; font-weight: 400; cursor: pointer; transition: 0.3s; text-align: center; }
-        .btn:hover { background: rgba(255,255,255,0.1); }
+        .btn { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--glass-border); color: #fff; padding: 1.8vh; border-radius: 1.5vh; font-size: 1.5vh; font-weight: 400; cursor: pointer; transition: 0.3s; text-align: center; }
+        .btn:hover { background: rgba(92, 141, 214, 0.15); border-color: rgba(92, 141, 214, 0.4); }
         .btn-active { background: var(--primary) !important; color: #000 !important; font-weight: 600; }
 
         /* 7 EMERGENCY OPTIONS */
@@ -60,8 +74,8 @@
     <header>
         <div class="h-time" id="ht">00:00</div>
         <div class="h-brand">
-            <h1>Westlake Elite</h1>
-            <p>COMMAND INTERFACE v19.0</p>
+            <img src="https://ik.imagekit.io/WestlakeElite/logos/16_9-transparent.png" alt="Westlake Elite">
+            <p>COMMAND INTERFACE v2.0</p>
         </div>
     </header>
 
