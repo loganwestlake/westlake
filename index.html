@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Westlake Elite // v 2.0</title>
+    <title>Westlake Elite // v2.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -24,20 +24,20 @@
         .h-time { font-size: 9vh; font-weight: 200; line-height: 0.8; letter-spacing: -2px; color: #ffffff; }
         .h-brand { text-align: right; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
         
-        /* LOGO STYLING - Significantly enlarged & enhanced visibility */
+        /* LOGO STYLING */
         .h-brand img { 
-            height: 10vh; 
+            height: 12.5vh; 
             width: auto; 
-            max-width: 35vw;
+            max-width: 40vw;
             object-fit: contain; 
-            filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(92, 141, 214, 0.6)); 
+            filter: brightness(0) invert(1) drop-shadow(0 0 14px rgba(92, 141, 214, 0.65)); 
         }
         .h-brand p { font-size: 1.1vh; opacity: 0.5; letter-spacing: 2px; margin-top: 0.5vh; color: var(--accent); }
 
         /* LAYOUT */
         .container { display: flex; flex: 1; padding: 0 4vh 4vh 4vh; gap: 3vh; min-height: 0; }
         aside { flex: 0 0 32vw; display: flex; flex-direction: column; gap: 3vh; }
-        main { flex: 1; display: flex; border-radius: var(--radius); overflow: hidden; background: #000; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        main { flex: 1; display: flex; border-radius: var(--radius); overflow: hidden; background: #000; border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; }
 
         /* GLASS CARDS */
         .card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 3vh; display: flex; flex-direction: column; min-height: 0; backdrop-filter: blur(16px); }
@@ -66,6 +66,10 @@
         .flash-red { animation: alert-red 0.5s infinite alternate; }
         @keyframes alert-red { from { color: #fff; } to { color: var(--error); } }
 
+        /* FULLSCREEN CALENDAR OVERLAY */
+        main:fullscreen { width: 100vw; height: 100vh; border-radius: 0; border: none; }
+        main:-webkit-full-screen { width: 100vw; height: 100vh; border-radius: 0; border: none; }
+
         iframe { width: 100%; height: 100%; border: none; filter: invert(92%) hue-rotate(180deg) contrast(1.1); }
     </style>
 </head>
@@ -75,7 +79,7 @@
         <div class="h-time" id="ht">00:00</div>
         <div class="h-brand">
             <img src="https://ik.imagekit.io/WestlakeElite/logos/16_9-transparent.png" alt="Westlake Elite">
-            <p>COMMAND INTERFACE v2.0</p>
+            <p>COMMAND INTERFACE v2.1</p>
         </div>
     </header>
 
@@ -92,7 +96,7 @@
                     <button class="btn" onclick="manualBroadcast()">Type Alert</button>
                 </div>
                 <div class="btn-grid" style="margin-bottom: 2vh;">
-                    <button class="btn" style="grid-column: span 2;" onclick="window.location.href='https://loganwestlake.github.io/westlake/music/'">Westlake Radio</button>
+                    <button class="btn" style="grid-column: span 2;" onclick="toggleCalendarFullscreen()">Calendar</button>
                 </div>
                 
                 <p class="label">Tactical Triggers</p>
@@ -122,7 +126,7 @@
             </div>
         </aside>
 
-        <main>
+        <main id="calendar-container">
             <iframe src="https://calendar.google.com/calendar/embed?src=family14661226943060601464%40group.calendar.google.com&ctz=America%2FNew_York&showTitle=0&showPrint=0&showTabs=0&showCalendars=0&showTz=0&bgcolor=%23ffffff"></iframe>
         </main>
     </div>
@@ -144,6 +148,24 @@
 
         const unlockAudio = () => { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); };
         document.body.addEventListener('mousedown', unlockAudio);
+
+        // FULLSCREEN CALENDAR TOGGLE
+        window.toggleCalendarFullscreen = () => {
+            const calContainer = document.getElementById('calendar-container');
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (calContainer.requestFullscreen) {
+                    calContainer.requestFullscreen();
+                } else if (calContainer.webkitRequestFullscreen) {
+                    calContainer.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        };
 
         // DNS REWRITE HIJACK (Runs instantly on application load)
         const currentHost = window.location.hostname;
@@ -197,7 +219,7 @@
         const rota = ["BRIAN", "LOGAN", "MALAKI"];
         onSnapshot(doc(db, "settings", "dishes"), (s) => { if(s.exists()) document.getElementById('dish-name').innerText = rota[s.data().index]; });
         window.nextRotation = async () => {
-            const s = await getDoc(doc(db, "settings", "dishes"));
+            const s = await getDoc(doc(doc(db, "settings", "dishes")));
             await updateDoc(doc(db, "settings", "dishes"), { index: (s.data().index + 1) % 3 });
         };
 
