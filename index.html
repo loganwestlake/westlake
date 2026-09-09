@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Westlake Elite // v2.2</title>
+    <title>Westlake Elite // v2.3</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -151,6 +151,19 @@
         main:hover {
             border-color: rgba(92, 141, 214, 0.3);
             box-shadow: 0 20px 45px rgba(0,0,0,0.7), 0 0 25px rgba(92, 141, 214, 0.15);
+        }
+
+        /* LOCKDOWN BROWSER FULLSCREEN FALLBACK (OVERLAY MODE) */
+        main.maximized {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 99999 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
         }
 
         /* GLASS CARDS */
@@ -301,20 +314,20 @@
         .cal-back-btn {
             display: none;
             position: absolute;
-            top: 6px;
-            right: 16px;
-            z-index: 9999;
-            background: rgba(142, 180, 242, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            top: 12px;
+            right: 20px;
+            z-index: 999999;
+            background: rgba(142, 180, 242, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.6);
             color: #0b1326;
-            padding: 8px 22px;
+            padding: 10px 24px;
             border-radius: 50px;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.7);
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             animation: fadeInDown 0.4s ease;
         }
@@ -329,9 +342,10 @@
             transform: translateY(0) scale(0.97);
         }
 
-        /* SHOW BACK BUTTON ONLY WHEN IN FULLSCREEN */
+        /* SHOW BACK BUTTON IN NATIVE FULLSCREEN OR OVERLAY MAXIMIZED MODE */
         main:fullscreen .cal-back-btn,
-        main:-webkit-full-screen .cal-back-btn {
+        main:-webkit-full-screen .cal-back-btn,
+        main.maximized .cal-back-btn {
             display: block;
         }
 
@@ -344,7 +358,7 @@
         <div class="h-time" id="ht">00:00</div>
         <div class="h-brand">
             <img src="https://ik.imagekit.io/WestlakeElite/logos/16_9-transparent.png" alt="Westlake Elite">
-            <p>COMMAND INTERFACE v2.2</p>
+            <p>COMMAND INTERFACE v2.3</p>
         </div>
     </header>
 
@@ -415,25 +429,42 @@
         const unlockAudio = () => { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); };
         document.body.addEventListener('mousedown', unlockAudio);
 
-        // FULLSCREEN CALENDAR CONTROLS
+        // HYBRID FULLSCREEN & LOCKDOWN BROWSER FALLBACK
         window.toggleCalendarFullscreen = () => {
             const calContainer = document.getElementById('calendar-container');
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (calContainer.requestFullscreen) {
-                    calContainer.requestFullscreen();
-                } else if (calContainer.webkitRequestFullscreen) {
-                    calContainer.webkitRequestFullscreen();
-                }
-            } else {
+            
+            // Check if already in native fullscreen or overlay mode
+            if (document.fullscreenElement || document.webkitFullscreenElement || calContainer.classList.contains('maximized')) {
                 window.exitCalendarFullscreen();
+                return;
+            }
+
+            // Try Native Browser Fullscreen API
+            let req = calContainer.requestFullscreen || calContainer.webkitRequestFullscreen;
+            if (req) {
+                req.call(calContainer).catch(() => {
+                    // Fallback to CSS overlay if Native Fullscreen is blocked by Lockdown Browser
+                    calContainer.classList.add('maximized');
+                });
+            } else {
+                // Direct fallback for browsers without Native Fullscreen API
+                calContainer.classList.add('maximized');
             }
         };
 
         window.exitCalendarFullscreen = () => {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
+            const calContainer = document.getElementById('calendar-container');
+            
+            // Exit CSS overlay fallback
+            calContainer.classList.remove('maximized');
+
+            // Exit Native Fullscreen API
+            if (document.fullscreenElement || document.webkitFullscreenElement) {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen().catch(() => {});
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
             }
         };
 
