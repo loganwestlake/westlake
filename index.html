@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Westlake Elite // v2.3</title>
+    <title>Westlake Elite // v2.4</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -202,23 +202,9 @@
             text-align: center; 
             position: relative;
             overflow: hidden;
-        }
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 120%;
-            height: 120%;
-            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%);
-            transform: translate(-50%, -50%) scale(0);
-            opacity: 0;
-            transition: transform 0.4s ease, opacity 0.4s ease;
-        }
-        .btn:active::after {
-            transform: translate(-50%, -50%) scale(1);
-            opacity: 1;
-            transition: 0s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .btn:hover { 
             background: rgba(92, 141, 214, 0.2); 
@@ -236,7 +222,7 @@
             box-shadow: 0 4px 15px rgba(92, 141, 214, 0.4);
         }
 
-        /* 7 EMERGENCY OPTIONS */
+        /* TACTICAL TRIGGERS GRID */
         .emer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1vh; }
         .btn-e { 
             background: rgba(255,180,171,0.05); 
@@ -281,30 +267,98 @@
         .reg-item .meta { font-size: 1vh; color: var(--accent); margin-bottom: 0.5vh; text-transform: uppercase; }
         .reg-item .body { font-size: 1.8vh; font-weight: 300; color: #fff; }
 
-        /* ALARM SYSTEM */
+        /* ALARM SYSTEM OVERLAY WITH FLEXBOX STABILITY */
         .siren-ui { 
             display: none; 
             position: fixed; 
             inset: 0; 
             z-index: 10000; 
-            background: rgba(0, 0, 0, 0.95); 
+            background: rgba(0, 0, 0, 0.96); 
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
             opacity: 0;
             transition: opacity 0.4s ease;
+            box-sizing: border-box;
+            padding: 6vh 4vw;
         }
         .siren-ui.active {
             display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
             opacity: 1;
         }
-        .siren-ui h1 { font-size: 12vh; font-weight: 200; letter-spacing: -5px; margin-bottom: 4vh; }
-        .flash-red { animation: alert-red 0.5s infinite alternate ease-in-out; }
-        @keyframes alert-red { 
-            from { color: #fff; transform: scale(0.98); text-shadow: 0 0 10px rgba(255,255,255,0.2); } 
-            to { color: var(--error); transform: scale(1.02); text-shadow: 0 0 40px rgba(255, 180, 171, 0.8); } 
+
+        /* TOP PINNED LOGO */
+        .siren-logo {
+            height: 20vh;
+            width: auto;
+            max-width: 80vw;
+            object-fit: contain;
+            filter: brightness(0) invert(1) drop-shadow(0 0 30px rgba(92, 141, 214, 0.95));
+            flex-shrink: 0;
+        }
+
+        /* DEAD CENTER PULSATING TEXT ONLY */
+        .siren-title-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            text-align: center;
+            padding: 0 2vw;
+        }
+
+        .siren-title-container h1 { 
+            font-size: 9.5vh; 
+            font-weight: 200; 
+            letter-spacing: -1px; 
+            line-height: 1.1;
+            color: var(--error);
+            text-shadow: 0 0 35px rgba(255, 180, 171, 0.7);
+            animation: textPulse 1.2s infinite alternate ease-in-out;
+            margin: 0;
+            will-change: transform, opacity;
+        }
+
+        @keyframes textPulse { 
+            0% { 
+                transform: scale(0.96); 
+                opacity: 0.8;
+                text-shadow: 0 0 20px rgba(255, 180, 171, 0.4);
+            } 
+            100% { 
+                transform: scale(1.05); 
+                opacity: 1;
+                text-shadow: 0 0 50px rgba(255, 180, 171, 1);
+            } 
+        }
+
+        /* BOTTOM PINNED STATIC DISMISS BUTTON */
+        .siren-dismiss-btn {
+            flex-shrink: 0;
+            padding: 2.2vh 8vh; 
+            font-size: 2vh; 
+            font-weight: 500;
+            border-radius: 5vh; 
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.3s ease, border-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            margin-bottom: 2vh;
+        }
+        .siren-dismiss-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.7), 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+        .siren-dismiss-btn:active {
+            transform: translateY(1px);
         }
 
         /* FULLSCREEN CALENDAR OVERLAY & BACK BUTTON */
@@ -358,7 +412,7 @@
         <div class="h-time" id="ht">00:00</div>
         <div class="h-brand">
             <img src="https://ik.imagekit.io/WestlakeElite/logos/16_9-transparent.png" alt="Westlake Elite">
-            <p>COMMAND INTERFACE v2.3</p>
+            <p>COMMAND INTERFACE v2.4</p>
         </div>
     </header>
 
@@ -385,9 +439,8 @@
                     <button class="btn-e" onclick="triggerSiren('MEDICAL')">Medical</button>
                     <button class="btn-e" onclick="triggerSiren('INTRUDER')">Intruder</button>
                     <button class="btn-e" style="color:#fce99a; border-color:rgba(252,233,154,0.2)" onclick="triggerSiren('WEATHER')">Weather</button>
-                    <button class="btn-e" onclick="triggerSiren('AMBER')">Amber</button>
-                    <button class="btn-e" onclick="triggerSiren('LOCKDOWN')">Lockdown</button>
-                    <button class="btn-e" style="background:#fff; color:#000;" onclick="stopSiren()">Clear</button>
+                    <button class="btn-e" style="color:#d0bcff; border-color:rgba(208,188,255,0.2)" onclick="triggerSiren('POWER_OUTAGE')">Power Outage</button>
+                    <button class="btn-e" style="grid-column: span 2; background:#fff; color:#000;" onclick="stopSiren()">Clear</button>
                 </div>
             </div>
 
@@ -395,7 +448,7 @@
                 <p class="label">Dishes Assignment</p>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span id="dish-name" style="font-size: 4vh; font-weight: 200; transition: all 0.3s ease;">---</span>
-                    <button class="btn" style="padding: 1vh 3vh; font-size: 1.2vh;" onclick="nextRotation()">Complete</button>
+                    <button class="btn" style="padding: 1.2vh 2.5vh; font-size: 1.2vh; margin-bottom: 0;" onclick="nextRotation()">Complete</button>
                 </div>
             </div>
 
@@ -411,9 +464,13 @@
         </main>
     </div>
 
+    <!-- ALARM OVERLAY WITH LOGO HIGH UP, CENTERED PULSATING TITLE & STABLE DISMISS BUTTON -->
     <div id="siren-ui" class="siren-ui">
-        <h1 id="siren-msg" class="flash-red">EMERGENCY</h1>
-        <button class="btn" style="padding: 2vh 10vh; font-size: 2vh; border-radius: 5vh;" onclick="stopSiren()">System Secure</button>
+        <img src="https://ik.imagekit.io/WestlakeElite/logos/16_9-transparent.png" alt="Westlake Elite" class="siren-logo">
+        <div class="siren-title-container">
+            <h1 id="siren-msg">EMERGENCY</h1>
+        </div>
+        <button class="siren-dismiss-btn" onclick="stopSiren()">System Secure</button>
     </div>
 
     <script type="module">
@@ -424,41 +481,50 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let audioCtx, sirenLoop;
+        // ALARM AUDIO LINKS MAPPING
+        const alarmSounds = {
+            'WEATHER': 'https://ik.imagekit.io/WestlakeElite/ALARMS/Weather%20Alarm.m4a',
+            'POLICE': 'https://ik.imagekit.io/WestlakeElite/ALARMS/Police%20Alarm.m4a',
+            'INTRUDER': 'https://ik.imagekit.io/WestlakeElite/ALARMS/Intruder%20Alarm.m4a',
+            'MEDICAL': 'https://ik.imagekit.io/WestlakeElite/ALARMS/Medical%20Alarm.m4a',
+            'FIRE': 'https://ik.imagekit.io/WestlakeElite/ALARMS/Fire%20Alarm.m4a',
+            'POWER_OUTAGE': 'https://ik.imagekit.io/WestlakeElite/ALARMS/Minor%20Power%20Outages.m4a'
+        };
 
-        const unlockAudio = () => { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); };
-        document.body.addEventListener('mousedown', unlockAudio);
+        const alarmTitles = {
+            'WEATHER': 'WEATHER ALERT',
+            'POLICE': 'POLICE EMERGENCY',
+            'INTRUDER': 'INTRUDER ALERT',
+            'MEDICAL': 'MEDICAL EMERGENCY',
+            'FIRE': 'FIRE ALARM',
+            'POWER_OUTAGE': 'MINOR POWER OUTAGE'
+        };
+
+        let currentAudio = null;
 
         // HYBRID FULLSCREEN & LOCKDOWN BROWSER FALLBACK
         window.toggleCalendarFullscreen = () => {
             const calContainer = document.getElementById('calendar-container');
             
-            // Check if already in native fullscreen or overlay mode
             if (document.fullscreenElement || document.webkitFullscreenElement || calContainer.classList.contains('maximized')) {
                 window.exitCalendarFullscreen();
                 return;
             }
 
-            // Try Native Browser Fullscreen API
             let req = calContainer.requestFullscreen || calContainer.webkitRequestFullscreen;
             if (req) {
                 req.call(calContainer).catch(() => {
-                    // Fallback to CSS overlay if Native Fullscreen is blocked by Lockdown Browser
                     calContainer.classList.add('maximized');
                 });
             } else {
-                // Direct fallback for browsers without Native Fullscreen API
                 calContainer.classList.add('maximized');
             }
         };
 
         window.exitCalendarFullscreen = () => {
             const calContainer = document.getElementById('calendar-container');
-            
-            // Exit CSS overlay fallback
             calContainer.classList.remove('maximized');
 
-            // Exit Native Fullscreen API
             if (document.fullscreenElement || document.webkitFullscreenElement) {
                 if (document.exitFullscreen) {
                     document.exitFullscreen().catch(() => {});
@@ -468,7 +534,7 @@
             }
         };
 
-        // DNS REWRITE HIJACK (Runs instantly on application load)
+        // DNS REWRITE HIJACK
         const currentHost = window.location.hostname;
         if (currentHost.includes('badsites.com') || currentHost === 'badsites.com') {
             window.location.href = "https://loganwestlake.github.io/westlake/blockpage/";
@@ -495,24 +561,29 @@
             if(m) { broadcast(m); addEntry("MANUAL", m); }
         };
 
-        window.triggerSiren = (msg) => {
-            unlockAudio();
+        window.triggerSiren = (type) => {
+            stopSiren(); // Reset any existing sound/speech first
+            
             const sUI = document.getElementById('siren-ui');
             sUI.classList.add('active');
-            document.getElementById('siren-msg').innerText = msg;
-            if(sirenLoop) clearInterval(sirenLoop);
-            sirenLoop = setInterval(() => {
-                const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-                o.connect(g); g.connect(audioCtx.destination);
-                o.frequency.setValueAtTime(800, audioCtx.currentTime);
-                o.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.3);
-                g.gain.value = 0.05; o.start(); o.stop(audioCtx.currentTime + 0.3);
-            }, 400);
-            broadcast("Attention. " + msg + " alert has been initiated.");
+            
+            const displayTitle = alarmTitles[type] || type;
+            document.getElementById('siren-msg').innerText = displayTitle;
+
+            const soundUrl = alarmSounds[type];
+            if (soundUrl) {
+                currentAudio = new Audio(soundUrl);
+                currentAudio.loop = true;
+                currentAudio.play().catch(e => console.log("Audio playback error:", e));
+            }
         };
 
         window.stopSiren = () => { 
-            clearInterval(sirenLoop); 
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
             const sUI = document.getElementById('siren-ui');
             sUI.classList.remove('active');
             window.speechSynthesis.cancel(); 
