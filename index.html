@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Westlake Elite // v2.4</title>
+    <title>Westlake Elite // v2.5</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -412,7 +412,7 @@
         <div class="h-time" id="ht">00:00</div>
         <div class="h-brand">
             <img src="https://ik.imagekit.io/WestlakeElite/logos/16_9-transparent.png" alt="Westlake Elite">
-            <p>COMMAND INTERFACE v2.4</p>
+            <p>COMMAND INTERFACE v2.5</p>
         </div>
     </header>
 
@@ -500,7 +500,44 @@
             'POWER_OUTAGE': 'MINOR POWER OUTAGE'
         };
 
-        let currentAudio = null;
+        // AUDIO PRELOAD POOL FOR INSTANT PLAYBACK & AUTOPLAY UNLOCK
+        const loadedAudios = {};
+        let isAudioUnlocked = false;
+
+        function preloadAndUnlockAudio() {
+            if (isAudioUnlocked) return;
+            
+            Object.keys(alarmSounds).forEach(key => {
+                if (!loadedAudios[key]) {
+                    const audio = new Audio(alarmSounds[key]);
+                    audio.preload = 'auto';
+                    audio.loop = true;
+                    loadedAudios[key] = audio;
+                }
+                
+                // Silent warm-up play & immediate pause to unlock browser audio policy
+                const a = loadedAudios[key];
+                a.muted = true;
+                const p = a.play();
+                if (p !== undefined) {
+                    p.then(() => {
+                        a.pause();
+                        a.currentTime = 0;
+                        a.muted = false;
+                    }).catch(e => {
+                        a.muted = false;
+                    });
+                }
+            });
+            
+            isAudioUnlocked = true;
+        }
+
+        // UNLOCK AUDIO ON ANY PAGE TOUCH/CLICK
+        window.addEventListener('click', preloadAndUnlockAudio, { once: false });
+        window.addEventListener('touchstart', preloadAndUnlockAudio, { once: false });
+
+        let currentAudioKey = null;
 
         // HYBRID FULLSCREEN & LOCKDOWN BROWSER FALLBACK
         window.toggleCalendarFullscreen = () => {
@@ -540,7 +577,7 @@
             window.location.href = "https://loganwestlake.github.io/westlake/blockpage/";
         }
 
-        // SYNC WITH PHONE
+        // SYNC WITH PHONE / REMOTE DATABASE
         onSnapshot(doc(db, "system_triggers", "current_alert"), (snap) => {
             if (snap.exists()) {
                 const d = snap.data();
@@ -562,28 +599,44 @@
         };
 
         window.triggerSiren = (type) => {
-            stopSiren(); // Reset any existing sound/speech first
-            
+            preloadAndUnlockAudio(); // Fallback unlock
+            stopSiren(); // Stop previous active sounds cleanly
+
             const sUI = document.getElementById('siren-ui');
             sUI.classList.add('active');
             
             const displayTitle = alarmTitles[type] || type;
             document.getElementById('siren-msg').innerText = displayTitle;
 
-            const soundUrl = alarmSounds[type];
-            if (soundUrl) {
-                currentAudio = new Audio(soundUrl);
-                currentAudio.loop = true;
-                currentAudio.play().catch(e => console.log("Audio playback error:", e));
+            if (loadedAudios[type]) {
+                const audio = loadedAudios[type];
+                audio.currentTime = 0;
+                audio.muted = false;
+                currentAudioKey = type;
+
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.warn("Audio play blocked by browser policy. Retrying on user interaction.", error);
+                    });
+                }
+            } else if (alarmSounds[type]) {
+                const audio = new Audio(alarmSounds[type]);
+                audio.loop = true;
+                loadedAudios[type] = audio;
+                currentAudioKey = type;
+                audio.play().catch(e => console.warn("Audio play blocked:", e));
             }
         };
 
         window.stopSiren = () => { 
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio = null;
+            if (currentAudioKey && loadedAudios[currentAudioKey]) {
+                const audio = loadedAudios[currentAudioKey];
+                audio.pause();
+                audio.currentTime = 0;
             }
+            currentAudioKey = null;
+
             const sUI = document.getElementById('siren-ui');
             sUI.classList.remove('active');
             window.speechSynthesis.cancel(); 
