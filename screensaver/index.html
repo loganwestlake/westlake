@@ -2052,9 +2052,9 @@ const DEFAULTS = {
   interval: 6,
   transition: 'fade',
   duration: 800,
-  shuffle: false,
+  shuffle: true,         // ← changed from false to true
   kenburns: true,
-  fit: 'cover',
+  fit: 'cover',          // ← already 'cover' (Fill screen), kept as-is
   watermark: true,
   hud: true,
   autohide: true,
@@ -2063,7 +2063,7 @@ const DEFAULTS = {
   videoLoop: false,
   advanceOnEnd: true
 };
-const STORE_KEY = 'westlake-screensaver-v2';
+const STORE_KEY = 'westlake-screensaver-v2.1';
 
 let CFG = Object.assign({}, DEFAULTS);
 try{
@@ -2914,4 +2914,3 @@ document.addEventListener('visibilitychange', () => {
 </script>
 </body>
 </html>
-
