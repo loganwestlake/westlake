@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Westlake Elite // v2.5</title>
+    <title>Westlake Elite // v2.6</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root { 
@@ -404,6 +404,55 @@
         }
 
         iframe { width: 100%; height: 100%; border: none; filter: invert(92%) hue-rotate(180deg) contrast(1.1); transition: opacity 0.5s ease; }
+
+        /* ===== INACTIVITY SCREENSAVER ===== */
+        #screensaver-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            background: #000;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        #screensaver-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        #screensaver-overlay iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            filter: none;
+        }
+        #screensaver-back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100001;
+            padding: 12px 26px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            backdrop-filter: blur(16px) saturate(160%);
+            -webkit-backdrop-filter: blur(16px) saturate(160%);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+            transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.3s ease;
+        }
+        #screensaver-back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(92, 141, 214, 0.4);
+        }
+        #screensaver-back-btn:active {
+            transform: translateY(0) scale(0.97);
+        }
     </style>
 </head>
 <body>
@@ -412,7 +461,7 @@
         <div class="h-time" id="ht">00:00</div>
         <div class="h-brand">
             <img src="https://ik.imagekit.io/WestlakeElite/logos/16_9-transparent.png" alt="Westlake Elite">
-            <p>COMMAND INTERFACE v2.5</p>
+            <p>COMMAND INTERFACE v2.6</p>
         </div>
     </header>
 
@@ -472,6 +521,12 @@
         </div>
         <button class="siren-dismiss-btn" onclick="stopSiren()">System Secure</button>
     </div>
+
+    <!-- INACTIVITY SCREENSAVER OVERLAY -->
+    <div id="screensaver-overlay">
+        <iframe id="screensaver-frame" data-src="https://loganwestlake.github.io/westlake/screensaver" allow="autoplay; fullscreen"></iframe>
+    </div>
+    <button id="screensaver-back-btn" style="display:none;">← Back to Hub</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -678,6 +733,83 @@
         }
 
         setInterval(() => { document.getElementById('ht').innerText = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }); }, 1000);
+
+        /* ===== INACTIVITY SCREENSAVER ===== */
+        const SCREENSAVER_IDLE_MS = 60 * 1000; // 1 minute
+        let idleTimer = null;
+        let screensaverActive = false;
+        let lastActivity = Date.now();
+
+        const ssOverlay = document.getElementById('screensaver-overlay');
+        const ssFrame   = document.getElementById('screensaver-frame');
+        const ssBackBtn = document.getElementById('screensaver-back-btn');
+
+        function activateScreensaver() {
+            if (screensaverActive) return;
+            screensaverActive = true;
+
+            if (!ssFrame.src) {
+                ssFrame.src = ssFrame.dataset.src;
+            }
+
+            ssOverlay.classList.add('active');
+            ssBackBtn.style.display = 'block';
+            document.body.style.cursor = 'none';
+        }
+
+        function deactivateScreensaver() {
+            if (!screensaverActive) return;
+            screensaverActive = false;
+
+            ssOverlay.classList.remove('active');
+            ssBackBtn.style.display = 'none';
+            document.body.style.cursor = '';
+
+            ssFrame.src = '';
+
+            resetIdleTimer();
+        }
+
+        function resetIdleTimer() {
+            lastActivity = Date.now();
+            if (screensaverActive) return;
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(activateScreensaver, SCREENSAVER_IDLE_MS);
+        }
+
+        ssBackBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deactivateScreensaver();
+        });
+
+        let lastMoveX = null, lastMoveY = null;
+        function activityHandler(e) {
+            if (e.type === 'mousemove') {
+                if (lastMoveX !== null) {
+                    const dx = Math.abs(e.clientX - lastMoveX);
+                    const dy = Math.abs(e.clientY - lastMoveY);
+                    if (dx < 5 && dy < 5) return;
+                }
+                lastMoveX = e.clientX;
+                lastMoveY = e.clientY;
+            }
+
+            if (!screensaverActive) {
+                if (Date.now() - lastActivity > 1000) {
+                    resetIdleTimer();
+                }
+            }
+        }
+
+        ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'].forEach(evt => {
+            window.addEventListener(evt, activityHandler, { passive: true });
+        });
+
+        resetIdleTimer();
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && !screensaverActive) resetIdleTimer();
+        });
     </script>
 </body>
 </html>
