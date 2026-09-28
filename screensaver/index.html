@@ -2052,18 +2052,18 @@ const DEFAULTS = {
   interval: 6,
   transition: 'fade',
   duration: 800,
-  shuffle: true,         // ← changed from false to true
-  kenburns: true,
-  fit: 'cover',          // ← already 'cover' (Fill screen), kept as-is
+  shuffle: true,         // ← shuffle on
+  kenburns: false,       // ← Ken Burns (auto zoom/pan) off
+  fit: 'contain',        // ← fit whole
   watermark: true,
   hud: true,
-  autohide: true,
+  autohide: false,
   preload: 10,
   videoSound: false,
   videoLoop: false,
   advanceOnEnd: true
 };
-const STORE_KEY = 'westlake-screensaver-v2.1';
+const STORE_KEY = 'westlake-screensaver-v3';
 
 let CFG = Object.assign({}, DEFAULTS);
 try{
