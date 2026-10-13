@@ -87,7 +87,7 @@
     background:linear-gradient(135deg,#f6dd8f,#c99a2e);
     box-shadow:0 0 14px rgba(230,186,88,.8);
   }
-  #gear{
+  #gear,#qrBtn{
     width:42px;height:42px;flex:none;border-radius:50%;display:grid;place-items:center;
     background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);
     color:#fff;cursor:pointer;padding:0;
@@ -95,9 +95,9 @@
     transition:transform .45s cubic-bezier(.22,.61,.36,1),background .25s ease,box-shadow .3s ease;
     box-shadow:0 6px 24px rgba(0,0,0,.35);
   }
-  #gear:hover{background:rgba(255,255,255,.2);transform:rotate(60deg) scale(1.07);box-shadow:0 8px 30px rgba(0,0,0,.5)}
-  #gear:active{transform:rotate(60deg) scale(.95)}
-  #gear svg{width:20px;height:20px}
+  #gear:hover,#qrBtn:hover{background:rgba(255,255,255,.2);transform:rotate(60deg) scale(1.07);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+  #gear:active,#qrBtn:active{transform:rotate(60deg) scale(.95)}
+  #gear svg,#qrBtn svg{width:20px;height:20px}
 
   #hud{
     position:fixed;left:0;bottom:0;z-index:30;padding:16px 22px;
@@ -230,6 +230,16 @@
   .btn:active{transform:scale(.975)}
   .btn.primary{background:linear-gradient(135deg,#e9c86c,#c99a2e);border-color:transparent;color:#1a1408;font-weight:600}
   .btn.primary:hover{filter:brightness(1.08)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  .text-input{
+    width:100%;padding:10px 12px;border-radius:11px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+    color:#e9e9ee;font-size:13px;font-family:inherit;outline:none;
+    transition:border-color .25s ease,background .25s ease;
+  }
+  .text-input:focus{border-color:rgba(233,200,108,.6);background:rgba(255,255,255,.08)}
+  .text-input::placeholder{color:rgba(255,255,255,.28)}
 
   #toast{
     position:fixed;left:50%;bottom:42px;transform:translate(-50%,16px);
@@ -241,11 +251,91 @@
   }
   #toast.show{opacity:1;transform:translate(-50%,0)}
 
+  /* ---------- clock pill ---------- */
+  #clock{
+    position:fixed;
+    right:22px;
+    bottom:calc(20px + env(safe-area-inset-bottom));
+    z-index:30;
+    display:flex;align-items:baseline;gap:12px;
+    padding:9px 20px;border-radius:18px;
+    background:rgba(92,92,100,.42);
+    border:1px solid rgba(255,255,255,.16);
+    backdrop-filter:blur(22px) saturate(170%);
+    -webkit-backdrop-filter:blur(22px) saturate(170%);
+    box-shadow:0 10px 34px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.09);
+    color:#fff;user-select:none;pointer-events:none;
+    text-shadow:0 2px 12px rgba(0,0,0,.5);
+    transition:opacity .6s ease;
+  }
+  #clockTime{
+    font-size:36px;font-weight:600;line-height:1;
+    letter-spacing:-.015em;font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  #clockAmPm{
+    font-size:12px;font-weight:700;letter-spacing:.1em;
+    color:rgba(255,255,255,.72);margin-left:5px;text-transform:uppercase;
+  }
+  #clockDate{
+    font-size:13px;font-weight:600;letter-spacing:.09em;
+    color:rgba(255,255,255,.72);text-transform:uppercase;white-space:nowrap;
+  }
+  body.ui-hidden #clock{opacity:0}
+
+  /* ---------- QR upload ---------- */
+  #qrOverlay{
+    position:fixed;inset:0;z-index:75;display:grid;place-items:center;
+    padding:22px;background:rgba(0,0,0,.6);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    transition:opacity .35s ease;
+  }
+  #qrOverlay.hidden{opacity:0;pointer-events:none}
+  #qrCard{
+    position:relative;width:min(370px,92vw);
+    padding:28px 26px 24px;border-radius:24px;text-align:center;
+    background:rgba(18,18,22,.94);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 30px 90px rgba(0,0,0,.75);
+    transition:transform .35s cubic-bezier(.22,.61,.36,1);
+  }
+  #qrOverlay.hidden #qrCard{transform:scale(.94)}
+  #qrClose{
+    position:absolute;top:14px;right:14px;
+    width:34px;height:34px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.13);
+    background:rgba(255,255,255,.06);color:#fff;cursor:pointer;
+    font-size:14px;line-height:1;display:grid;place-items:center;
+    transition:background .2s ease,transform .2s ease;
+  }
+  #qrClose:hover{background:rgba(255,255,255,.16);transform:scale(1.06)}
+  .qr-title{font-size:17px;font-weight:600;letter-spacing:.02em;margin-bottom:6px}
+  .qr-sub{font-size:13px;color:rgba(255,255,255,.5);line-height:1.5;margin-bottom:18px}
+  #qrBox{
+    width:230px;height:230px;margin:0 auto;
+    display:grid;place-items:center;
+    background:#fff;border-radius:16px;overflow:hidden;
+    box-shadow:0 0 0 1px rgba(255,255,255,.1);
+  }
+  #qrBox svg,#qrBox img{width:100%;height:100%;display:block}
+  .qr-empty{padding:20px;font-size:12.5px;color:#555;line-height:1.6;text-align:center}
+  #qrLink{
+    margin-top:14px;font-size:11.5px;color:rgba(255,255,255,.42);
+    word-break:break-all;line-height:1.5;min-height:14px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  #qrActions{display:flex;gap:8px;margin-top:16px}
+  #qrActions .btn{flex:1}
+
   @media (max-width:520px){
     #watermark{font-size:11.5px;letter-spacing:.13em}
-    #gear{width:38px;height:38px}
+    #gear,#qrBtn{width:38px;height:38px}
     #hudName{max-width:60vw}
     input[type=range]{width:96px}
+    #clock{right:14px;bottom:calc(16px + env(safe-area-inset-bottom));padding:7px 14px;gap:8px}
+    #clockTime{font-size:26px}
+    #clockAmPm{font-size:10px}
+    #clockDate{font-size:10.5px}
+    #qrBox{width:190px;height:190px}
   }
 </style>
 </head>
@@ -264,6 +354,17 @@
 
 <div id="topbar">
   <div id="watermark"><span class="dot"></span><span>Westlake Elite</span></div>
+  <button id="qrBtn" title="Upload photos via QR" aria-label="Upload photos via QR">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+      <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+      <path d="M14 14h3v3h-3z"/>
+      <path d="M18 18h3v3h-3z"/>
+      <path d="M14 21h1"/>
+      <path d="M21 14v1"/>
+    </svg>
+  </button>
   <button id="gear" title="Settings" aria-label="Settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="3.1"/>
@@ -274,6 +375,11 @@
 
 <div id="hud"><span id="hudName"></span><span id="hudCount"></span></div>
 <div id="progress"><div id="progressBar"></div></div>
+
+<div id="clock">
+  <span id="clockTime">--:--<span id="clockAmPm"></span></span>
+  <span id="clockDate">—</span>
+</div>
 
 <div id="scrim" class="hidden"></div>
 
@@ -352,6 +458,14 @@
     </div>
 
     <div class="group">
+      <div class="group-title">Sharing</div>
+      <div class="row-col">
+        <div class="muted">QR code link — guests scan to upload photos</div>
+        <input type="url" id="sUploadUrl" class="text-input" placeholder="https://…" spellcheck="false" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="group">
       <div class="group-title">Actions</div>
       <div class="btn-row">
         <button id="btnFull" class="btn">Fullscreen</button>
@@ -361,6 +475,20 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<div id="qrOverlay" class="hidden">
+  <div id="qrCard">
+    <button id="qrClose" aria-label="Close">✕</button>
+    <div class="qr-title">Upload Photos</div>
+    <div class="qr-sub">Scan this code with your phone camera to upload images.</div>
+    <div id="qrBox"></div>
+    <div id="qrLink"></div>
+    <div id="qrActions">
+      <button id="qrCopy" class="btn">Copy link</button>
+      <button id="qrOpen" class="btn primary">Open</button>
+    </div>
   </div>
 </div>
 
@@ -2052,16 +2180,17 @@ const DEFAULTS = {
   interval: 6,
   transition: 'fade',
   duration: 800,
-  shuffle: true,         // ← shuffle on
-  kenburns: false,       // ← Ken Burns (auto zoom/pan) off
-  fit: 'contain',        // ← fit whole
+  shuffle: true,
+  kenburns: false,
+  fit: 'contain',
   watermark: true,
   hud: true,
   autohide: false,
   preload: 10,
   videoSound: false,
   videoLoop: false,
-  advanceOnEnd: true
+  advanceOnEnd: true,
+  uploadUrl: ''
 };
 const STORE_KEY = 'westlake-screensaver-v3';
 
@@ -2093,6 +2222,18 @@ const loaderText  = document.getElementById('loaderText');
 const toastEl     = document.getElementById('toast');
 const urlArea     = document.getElementById('sUrls');
 const listInfo    = document.getElementById('listInfo');
+
+const clockTime   = document.getElementById('clockTime');
+const clockAmPm   = document.getElementById('clockAmPm');
+const clockDate   = document.getElementById('clockDate');
+
+const qrBtn       = document.getElementById('qrBtn');
+const qrOverlay   = document.getElementById('qrOverlay');
+const qrBox       = document.getElementById('qrBox');
+const qrLink      = document.getElementById('qrLink');
+const qrCloseBtn  = document.getElementById('qrClose');
+const qrCopyBtn   = document.getElementById('qrCopy');
+const qrOpenBtn   = document.getElementById('qrOpen');
 
 /* =====================================================================
    PARSE
@@ -2146,8 +2287,8 @@ let booted = false;
 /* =====================================================================
    PRELOAD MANAGER
    ===================================================================== */
-const imgCache = new Map();          // url -> Image
-const vidCache = new Map();          // url -> HTMLVideoElement
+const imgCache = new Map();
+const vidCache = new Map();
 let preloadQueue = [];
 let preloadRunning = false;
 let preloadGeneration = 0;
@@ -2213,7 +2354,6 @@ function preloadAround(){
       if(vidCount++ < 2) preloadQueue.push(() => preloadVideo(it.url));
     }
   }
-  // previous image too
   const prevIt = playlist[(index - 1 + n) % n];
   if(prevIt && prevIt.type === 'image') preloadQueue.push(() => preloadImage(prevIt.url));
 
@@ -2659,6 +2799,102 @@ panelClose.addEventListener('click', closePanel);
 scrim.addEventListener('click', closePanel);
 
 /* =====================================================================
+   CLOCK
+   ===================================================================== */
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function pad2(n){ return n < 10 ? '0' + n : '' + n; }
+function updateClock(){
+  const now = new Date();
+  let h = now.getHours();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12; if(h === 0) h = 12;
+  clockTime.firstChild.nodeValue = h + ':' + pad2(now.getMinutes());
+  clockAmPm.textContent = ampm;
+  clockDate.textContent = MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+/* =====================================================================
+   QR UPLOAD
+   ===================================================================== */
+(function loadQRlib(){
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js';
+  s.async = true;
+  document.head.appendChild(s);
+})();
+
+function currentUploadUrl(){
+  const u = String(CFG.uploadUrl || '').trim();
+  return /^https?:\/\//i.test(u) ? u : '';
+}
+
+function renderQR(text){
+  qrBox.innerHTML = '';
+  if(!text){
+    qrBox.innerHTML = '<div class="qr-empty">No upload link set.<br>Add one in Settings → Sharing.</div>';
+    qrLink.textContent = '';
+    qrCopyBtn.disabled = true;
+    qrOpenBtn.disabled = true;
+    return;
+  }
+  qrCopyBtn.disabled = false;
+  qrOpenBtn.disabled = false;
+  qrLink.textContent = text;
+
+  if(typeof window.qrcode === 'function'){
+    try{
+      const qr = window.qrcode(0, 'M');
+      qr.addData(text);
+      qr.make();
+      qrBox.innerHTML = qr.createSvgTag({ cellSize: 6, margin: 3, scalable: true });
+      return;
+    }catch(e){ /* fall through to API */ }
+  }
+  const img = document.createElement('img');
+  img.alt = 'QR code';
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=8&data=' + encodeURIComponent(text);
+  img.onerror = () => { qrBox.innerHTML = '<div class="qr-empty">QR could not be generated.</div>'; };
+  qrBox.appendChild(img);
+}
+
+function openQR(){
+  paused = true;
+  clearTimeout(timer);
+  clearTimeout(hideTimer);
+  progressBar.style.transition = 'none';
+  progressBar.style.width = '0%';
+  renderQR(currentUploadUrl());
+  qrOverlay.classList.remove('hidden');
+  document.body.classList.remove('ui-hidden');
+  document.body.classList.remove('hidecursor');
+}
+function closeQR(){
+  qrOverlay.classList.add('hidden');
+  if(!panelOpen){ paused = false; scheduleNext(); startProgress(); }
+  poke();
+}
+
+qrBtn.addEventListener('click', openQR);
+qrCloseBtn.addEventListener('click', closeQR);
+qrOverlay.addEventListener('click', e => { if(e.target === qrOverlay) closeQR(); });
+
+qrCopyBtn.addEventListener('click', () => {
+  const url = currentUploadUrl();
+  if(!url) return;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(() => toast('Link copied')).catch(() => toast('Copy failed'));
+  } else {
+    toast('Copy not supported');
+  }
+});
+qrOpenBtn.addEventListener('click', () => {
+  const url = currentUploadUrl();
+  if(url) window.open(url, '_blank', 'noopener');
+});
+
+/* =====================================================================
    SETTINGS BINDING
    ===================================================================== */
 const outInterval = document.getElementById('oInterval');
@@ -2706,6 +2942,7 @@ function onSettingChanged(key){
     } else poke();
   }
   if(key === 'preload') preloadAround();
+  if(key === 'uploadUrl' && !qrOverlay.classList.contains('hidden')) renderQR(currentUploadUrl());
 }
 
 function bindControl(id, key, type){
@@ -2739,6 +2976,7 @@ const cAdvance   = bindControl('sAdvance', 'advanceOnEnd', 'bool');
 const cWm        = bindControl('sWm', 'watermark', 'bool');
 const cHud       = bindControl('sHud', 'hud', 'bool');
 const cAutohide  = bindControl('sAutohide', 'autohide', 'bool');
+const cUpload    = bindControl('sUploadUrl', 'uploadUrl', 'str');
 
 function applySettingsToUI(){
   if(cInterval) cInterval.value = CFG.interval;
@@ -2754,6 +2992,7 @@ function applySettingsToUI(){
   if(cWm)       cWm.checked = CFG.watermark;
   if(cHud)      cHud.checked = CFG.hud;
   if(cAutohide) cAutohide.checked = CFG.autohide;
+  if(cUpload)   cUpload.value = CFG.uploadUrl || '';
   syncOutputs();
   watermarkEl.style.display = CFG.watermark ? '' : 'none';
   hud.style.display = CFG.hud ? '' : 'none';
@@ -2831,7 +3070,10 @@ window.addEventListener('keydown', e => {
     case 'f': case 'F': toggleFullscreen(); break;
     case 's': case 'S': panelOpen ? closePanel() : openPanel(); break;
     case 'r': case 'R': animateViewTo(1, 0, 0); break;
-    case 'Escape': if(panelOpen) closePanel(); break;
+    case 'Escape':
+      if(!qrOverlay.classList.contains('hidden')) closeQR();
+      else if(panelOpen) closePanel();
+      break;
   }
 });
 
@@ -2861,7 +3103,6 @@ function boot(){
   urlArea.value = items.map(i => i.url).join('\n');
   updateListInfo();
 
-  /* Preload the first batch BEFORE revealing, so the first swipe is instant */
   const firstBatch = Math.max(1, Math.min(CFG.preload, items.length));
   let pending = 0;
 
@@ -2877,9 +3118,8 @@ function boot(){
     img.src = it.url;
     imgCache.set(it.url, img);
   }
-  /* If no images in first batch, reveal anyway after a short beat */
   if(pending === 0) setTimeout(reveal, 250);
-  setTimeout(reveal, 4000); // hard safety
+  setTimeout(reveal, 4000);
 
   function reveal(){
     if(booted) return;
@@ -2892,11 +3132,7 @@ function boot(){
 }
 
 applySettingsToUI();
-loadFromEmbeddedAndStart();
-
-function loadFromEmbeddedAndStart(){
-  boot();
-}
+boot();
 
 /* pause auto-advance when tab is hidden */
 document.addEventListener('visibilitychange', () => {
