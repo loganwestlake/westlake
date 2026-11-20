@@ -519,6 +519,7 @@
         <div class="siren-title-container">
             <h1 id="siren-msg">EMERGENCY</h1>
         </div>
+        <div id="siren-sound-hint" style="display:none; font-size:2.2vh; font-weight:700; letter-spacing:0.1em; color:#fff; background:rgba(255,255,255,0.12); padding:1.2vh 2.5vh; border-radius:100px; margin-top:2vh;">🔇 TAP ANYWHERE (OR PRESS ANY BUTTON) FOR SOUND</div>
         <button class="siren-dismiss-btn" onclick="stopSiren()">System Secure</button>
     </div>
 
@@ -557,44 +558,79 @@
             'LOCKDOWN': 'LOCKDOWN'
         };
 
-        // AUDIO PRELOAD POOL FOR INSTANT PLAYBACK & AUTOPLAY UNLOCK
+        // AUDIO POOL & AUTOPLAY UNLOCK
+        // Browsers only allow sound after a real tap/click/keypress on the page.
+        // An alarm that arrives from Firebase before that will be silent, so we
+        // remember it and play it on the very next tap or remote button press.
         const loadedAudios = {};
         let isAudioUnlocked = false;
+        let currentAudioKey = null;   // alarm that should be sounding right now
+        let pendingAudioKey = null;   // alarm whose sound was blocked, waiting for a tap
 
+        function getAudio(key) {
+            if (!loadedAudios[key]) {
+                const a = new Audio(alarmSounds[key]);
+                a.preload = 'auto';
+                a.loop = true;
+                loadedAudios[key] = a;
+            }
+            return loadedAudios[key];
+        }
+
+        function setSoundHint(show) {
+            document.getElementById('siren-sound-hint').style.display = show ? 'block' : 'none';
+        }
+
+        function playAlarmAudio(key) {
+            const audio = getAudio(key);
+            audio.muted = false;
+            pendingAudioKey = null;
+            setSoundHint(false);
+            const p = audio.play();
+            if (p !== undefined) {
+                p.catch(err => {
+                    // Alarm was cleared/changed meanwhile, or play was interrupted on purpose
+                    if (currentAudioKey !== key || err.name === 'AbortError') return;
+                    console.warn("Alarm sound blocked until the page is tapped:", err);
+                    pendingAudioKey = key;
+                    setSoundHint(true);
+                });
+            }
+        }
+
+        // Runs on every tap/click/keypress (a real user gesture)
         function preloadAndUnlockAudio() {
+            // Alarm is showing but its sound was blocked: play it now
+            if (pendingAudioKey && pendingAudioKey === currentAudioKey) {
+                playAlarmAudio(pendingAudioKey);
+            }
             if (isAudioUnlocked) return;
-            
+
             Object.keys(alarmSounds).forEach(key => {
-                if (!loadedAudios[key]) {
-                    const audio = new Audio(alarmSounds[key]);
-                    audio.preload = 'auto';
-                    audio.loop = true;
-                    loadedAudios[key] = audio;
-                }
-                
-                // Silent warm-up play & immediate pause to unlock browser audio policy
-                const a = loadedAudios[key];
+                if (key === currentAudioKey) return; // never touch the alarm that's sounding
+                const a = getAudio(key);
                 a.muted = true;
                 const p = a.play();
                 if (p !== undefined) {
                     p.then(() => {
-                        a.pause();
-                        a.currentTime = 0;
+                        isAudioUnlocked = true; // only count it once a play actually worked
+                        // Don't silence it if this alarm started while warming up
+                        if (key !== currentAudioKey) {
+                            a.pause();
+                            a.currentTime = 0;
+                        }
                         a.muted = false;
-                    }).catch(e => {
+                    }).catch(() => {
                         a.muted = false;
                     });
                 }
             });
-            
-            isAudioUnlocked = true;
         }
 
-        // UNLOCK AUDIO ON ANY PAGE TOUCH/CLICK
-        window.addEventListener('click', preloadAndUnlockAudio, { once: false });
-        window.addEventListener('touchstart', preloadAndUnlockAudio, { once: false });
-
-        let currentAudioKey = null;
+        // UNLOCK AUDIO ON ANY TOUCH, CLICK OR KEY (TV remotes send key presses)
+        window.addEventListener('click', preloadAndUnlockAudio);
+        window.addEventListener('touchstart', preloadAndUnlockAudio);
+        window.addEventListener('keydown', preloadAndUnlockAudio);
 
         // HYBRID FULLSCREEN & LOCKDOWN BROWSER FALLBACK
         window.toggleCalendarFullscreen = () => {
@@ -656,47 +692,34 @@
         };
 
         window.triggerSiren = (type) => {
-            preloadAndUnlockAudio(); // Fallback unlock
             stopSiren(); // Stop previous active sounds cleanly
 
             const sUI = document.getElementById('siren-ui');
             sUI.classList.add('active');
-            
+
             const displayTitle = alarmTitles[type] || type;
             document.getElementById('siren-msg').innerText = displayTitle;
 
-            if (loadedAudios[type]) {
-                const audio = loadedAudios[type];
-                audio.currentTime = 0;
-                audio.muted = false;
+            if (alarmSounds[type]) {
                 currentAudioKey = type;
-
-                const playPromise = audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.warn("Audio play blocked by browser policy. Retrying on user interaction.", error);
-                    });
-                }
-            } else if (alarmSounds[type]) {
-                const audio = new Audio(alarmSounds[type]);
-                audio.loop = true;
-                loadedAudios[type] = audio;
-                currentAudioKey = type;
-                audio.play().catch(e => console.warn("Audio play blocked:", e));
+                getAudio(type).currentTime = 0;
+                playAlarmAudio(type);
             }
         };
 
-        window.stopSiren = () => { 
-            if (currentAudioKey && loadedAudios[currentAudioKey]) {
-                const audio = loadedAudios[currentAudioKey];
-                audio.pause();
-                audio.currentTime = 0;
-            }
+        window.stopSiren = () => {
             currentAudioKey = null;
+            pendingAudioKey = null;
+            setSoundHint(false);
+            // Pause every alarm sound, not just the last one, so nothing keeps looping
+            Object.values(loadedAudios).forEach(a => {
+                a.pause();
+                a.currentTime = 0;
+            });
 
             const sUI = document.getElementById('siren-ui');
             sUI.classList.remove('active');
-            window.speechSynthesis.cancel(); 
+            window.speechSynthesis.cancel();
         };
 
         const rota = ["BRIAN", "LOGAN", "MALAKI"];
