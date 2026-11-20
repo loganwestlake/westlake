@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>POLICE Request</title></head>
-<body data-type="POLICE" style="background:#000;color:#fff;font:bold 6vw sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+<body style="background:#000;color:#fff;font:bold 6vw sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
 <div id="msg">SENDING POLICE...</div>
-<script type="module" src="/westlake/request.js"></script>
+<script type="module">
+// Opening this page = pressing the POLICE button on the TV dashboard.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+const db = getFirestore(initializeApp({ apiKey: "AIzaSyDn3fqrdVcRnvkiX7t6TPJWrngXSrM_1p4", projectId: "my-a-ab8f3", appId: "1:65984042323:web:04a6ebadc4eb29d52c3da6" }));
+const msg = document.getElementById('msg');
+setDoc(doc(db, "system_triggers", "current_alert"), { type: "POLICE", active: true, cancel: false, timestamp: Date.now() })
+  .then(() => { msg.textContent = "POLICE SENT ✓"; })
+  .catch(e => { msg.textContent = "FAILED: " + e.message; });
+</script>
 </body></html>
